@@ -5,17 +5,18 @@
  */
 package com.company.daoInter;
 
-import com.company.bean.User;
+import com.company.entity.Country;
 import java.util.List;
 
 /**
  *
  * @author MyRzayev
  */
-public interface UserDaoInter {
-    public List<User> getAll();
-    public User getById(int id);
-    public boolean addUser(User u);
-    public boolean updateUser(User u);
-    public boolean removeUser(int id);
+public interface CountryDaoInter {
+
+    public List<Country> getAllCountry();
+    
+    public boolean updateCountry(Country c);
+    
+    public boolean removeCountry(int id);
 }

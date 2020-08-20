@@ -5,13 +5,14 @@
  */
 package com.company.daoImpl;
 
-import com.company.bean.User;
 import com.company.daoInter.AbstractDao;
-import com.company.daoInter.UserDaoInter;
+import com.company.daoInter.EmpHistoryDaoInter;
+import com.company.entity.EmploymentHistory;
+import com.company.entity.User;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,90 +20,34 @@ import java.util.List;
  *
  * @author MyRzayev
  */
-public class UserDaoImpl extends AbstractDao implements UserDaoInter {
+public class EmpHistoryDaoImpl extends AbstractDao implements EmpHistoryDaoInter {
+
+    private EmploymentHistory getEmpHistory(ResultSet res) throws Exception {
+        String header = res.getString("header");
+        Date startDate = res.getDate("start_date");
+        Date endDate = res.getDate("end_date");
+        String jobDesc = res.getString("job_desc");
+        int userId = res.getInt("user_id");
+
+        EmploymentHistory emp = new EmploymentHistory(null, header, startDate, endDate, jobDesc, new User(userId));
+        return emp;
+    }
 
     @Override
-    public List<User> getAll() {
-        List<User> list = new ArrayList<>();
+    public List<EmploymentHistory> getAllEmpHistoryByUserId(int userId) {
+        List<EmploymentHistory> list = new ArrayList<>();
         try (Connection c = connect()) {//Bu auto close demekdir connection-i
-            Statement stat = c.createStatement();
-            stat.execute("select * from user");
-            ResultSet res = stat.getResultSet();
+            PreparedStatement stmt = c.prepareStatement("select * from employment_history where user_id = ?");
+            stmt.setInt(1, userId);
+            stmt.execute();
+            ResultSet res = stmt.getResultSet();
             while (res.next()) {
-                int id = res.getInt("id");
-                String name = res.getString("name");
-                String surname = res.getString("surname");
-                String phone = res.getString("phone");
-                String email = res.getString("email");
-
-                list.add(new User(id, name, surname, phone, email));
+                EmploymentHistory emp = getEmpHistory(res);
+                list.add(emp);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return list;
-    }
-
-    @Override
-    public boolean updateUser(User u) {
-        try (Connection c = connect()) {
-            PreparedStatement stmt = c.prepareStatement("update user set name=?, surname=?, phone=?, email=? where id=?");
-            stmt.setString(1, u.getName());
-            stmt.setString(2, u.getSurname());
-            stmt.setString(3, u.getPhone());
-            stmt.setString(4, u.getEmail());
-            stmt.setInt(5, u.getId());
-            return stmt.execute();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean removeUser(int id) {
-        try (Connection c = connect()) {
-            Statement stat = c.createStatement();
-            return stat.execute("delete from user where id = " + id);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return false;
-        }
-    }
-
-    @Override
-    public User getById(int userId) {
-        User result = null;
-        try (Connection c = connect()) {//Bu auto close demekdir connection-i
-            Statement stat = c.createStatement();
-            stat.execute("select * from user where id = " + userId);
-            ResultSet res = stat.getResultSet();
-            while (res.next()) {
-                int id = res.getInt("id");
-                String name = res.getString("name");
-                String surname = res.getString("surname");
-                String phone = res.getString("phone");
-                String email = res.getString("email");
-
-                result = new User(id, name, surname, phone, email);
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return result;
-    }
-
-    @Override
-    public boolean addUser(User u) {
-        try (Connection c = connect()) {
-            PreparedStatement stmt = c.prepareStatement("insert into user(name,surname,phone,email) values(?,?,?,?)");
-            stmt.setString(1, u.getName());
-            stmt.setString(2, u.getSurname());
-            stmt.setString(3, u.getPhone());
-            stmt.setString(4, u.getEmail());
-            return stmt.execute();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return false;
-        }
     }
 }

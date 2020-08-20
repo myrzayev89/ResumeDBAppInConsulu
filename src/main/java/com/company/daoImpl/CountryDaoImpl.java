@@ -5,9 +5,9 @@
  */
 package com.company.daoImpl;
 
-import com.company.bean.User;
+import com.company.entity.Country;
 import com.company.daoInter.AbstractDao;
-import com.company.daoInter.UserDaoInter;
+import com.company.daoInter.CountryDaoInter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,23 +19,27 @@ import java.util.List;
  *
  * @author MyRzayev
  */
-public class UserDaoImpl extends AbstractDao implements UserDaoInter {
+public class CountryDaoImpl extends AbstractDao implements CountryDaoInter {
+
+    private Country getCountry(ResultSet res) throws Exception {
+        int id = res.getInt("id");
+        String name = res.getString("name");
+        String nationality = res.getString("nationality");
+
+        Country country = new Country(id, name, nationality);
+        return country;
+    }
 
     @Override
-    public List<User> getAll() {
-        List<User> list = new ArrayList<>();
+    public List<Country> getAllCountry() {
+        List<Country> list = new ArrayList<>();
         try (Connection c = connect()) {//Bu auto close demekdir connection-i
             Statement stat = c.createStatement();
-            stat.execute("select * from user");
+            stat.execute("select * from country");
             ResultSet res = stat.getResultSet();
             while (res.next()) {
-                int id = res.getInt("id");
-                String name = res.getString("name");
-                String surname = res.getString("surname");
-                String phone = res.getString("phone");
-                String email = res.getString("email");
-
-                list.add(new User(id, name, surname, phone, email));
+                Country country = getCountry(res);
+                list.add(country);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -44,14 +48,12 @@ public class UserDaoImpl extends AbstractDao implements UserDaoInter {
     }
 
     @Override
-    public boolean updateUser(User u) {
+    public boolean updateCountry(Country con) {
         try (Connection c = connect()) {
-            PreparedStatement stmt = c.prepareStatement("update user set name=?, surname=?, phone=?, email=? where id=?");
-            stmt.setString(1, u.getName());
-            stmt.setString(2, u.getSurname());
-            stmt.setString(3, u.getPhone());
-            stmt.setString(4, u.getEmail());
-            stmt.setInt(5, u.getId());
+            PreparedStatement stmt = c.prepareStatement("update country set name=?, nationality=? where id=?");
+            stmt.setString(1, con.getName());
+            stmt.setString(2, con.getNationality());
+            stmt.setInt(3, con.getId());
             return stmt.execute();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -59,50 +61,15 @@ public class UserDaoImpl extends AbstractDao implements UserDaoInter {
         }
     }
 
-    public boolean removeUser(int id) {
+    @Override
+    public boolean removeCountry(int id) {
         try (Connection c = connect()) {
             Statement stat = c.createStatement();
-            return stat.execute("delete from user where id = " + id);
+            return stat.execute("delete from country where id = " + id);
         } catch (Exception ex) {
             ex.printStackTrace();
             return false;
         }
     }
 
-    @Override
-    public User getById(int userId) {
-        User result = null;
-        try (Connection c = connect()) {//Bu auto close demekdir connection-i
-            Statement stat = c.createStatement();
-            stat.execute("select * from user where id = " + userId);
-            ResultSet res = stat.getResultSet();
-            while (res.next()) {
-                int id = res.getInt("id");
-                String name = res.getString("name");
-                String surname = res.getString("surname");
-                String phone = res.getString("phone");
-                String email = res.getString("email");
-
-                result = new User(id, name, surname, phone, email);
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return result;
-    }
-
-    @Override
-    public boolean addUser(User u) {
-        try (Connection c = connect()) {
-            PreparedStatement stmt = c.prepareStatement("insert into user(name,surname,phone,email) values(?,?,?,?)");
-            stmt.setString(1, u.getName());
-            stmt.setString(2, u.getSurname());
-            stmt.setString(3, u.getPhone());
-            stmt.setString(4, u.getEmail());
-            return stmt.execute();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return false;
-        }
-    }
 }

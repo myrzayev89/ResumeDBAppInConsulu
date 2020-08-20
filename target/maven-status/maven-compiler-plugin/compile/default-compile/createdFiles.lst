@@ -1,5 +1,0 @@
-com\company\main\Main.class
-com\company\daoImpl\UserDaoImpl.class
-com\company\bean\User.class
-com\company\daoInter\UserDaoInter.class
-com\company\daoInter\AbstractDao.class
